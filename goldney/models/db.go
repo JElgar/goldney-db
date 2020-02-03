@@ -2,6 +2,7 @@ package models
 
 import (
   "database/sql"
+  _ "github.com/lib/pq"
 )
 
 // This is the datastore interface which states what fucntions a datastore must define. This is very useful for testing as a "fake" datastore can be created.
