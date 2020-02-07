@@ -2,6 +2,7 @@ package models
 
 import (
   "database/sql"
+  _ "github.com/lib/pq"
 )
 
 // This is the datastore interface which states what fucntions a datastore must define. This is very useful for testing as a "fake" datastore can be created.
@@ -16,8 +17,8 @@ type DB struct {
 }
 
 
-func InitDB(DbUrl string) (*DB, error) {
-    db, err := sql.Open("postgres", DbUrl)
+func InitDB(DbHost string, DbUser string, DbPassword string) (*DB, error) {
+  db, err := sql.Open("postgres", "postgresql://" + DbUser + ":" + DbPassword + "@" + DbHost)
     if err != nil {
         return nil, err
     }
