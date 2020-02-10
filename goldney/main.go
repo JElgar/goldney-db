@@ -2,7 +2,7 @@ package main
 
 import (
 //   "database/sql"
-  models "github.com/jelgar/goLdney/goldney-ar/goldney/models"
+  models "jameselgar.com/goldney/models"
   "log"
   "os"
 )
