@@ -2,7 +2,7 @@ package main
 
 import (
    "github.com/gin-gonic/gin"
-   models "jameselgar.com/goldney/modles"
+   models "jameselgar.com/goldney/models"
 )
 
 func SetupRouter(env *Env) *gin.Engine {
@@ -31,7 +31,7 @@ func (e *Env) newTile (c *gin.Context){
     var t models.Tile
     c.BindJSON(&t)
 
-    tile, err := e.db.CreateTile(&t)
+    _, err := e.db.CreateTile(&t)
     if err != nil && err.Code == 409 {
         c.JSON(err.Code, err)
         return
