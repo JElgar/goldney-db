@@ -18,7 +18,11 @@ type DB struct {
 
 
 func InitDB(DbHost string, DbUser string, DbPassword string) (*DB, error) {
-  db, err := sql.Open("postgres", "postgresql://" + DbUser + ":" + DbPassword + "@" + DbHost)
+//    psqlInfo := fmt.Sprintf("host=%s port=%d user=%s"+ "password=%s dbname=%s sslmode=disable", 
+//    DbHost, "5432", DbUser, DbPassword, "test")
+psqlInfo := "postgres://"+ DbUser + ":" + DbPassword + "@db/goldney?sslmode=disable"
+//  db, err := sql.Open("postgres", DbUser + ":" + DbPassword + "@" + DbHost)
+    db, err := sql.Open("postgres", psqlInfo)
     if err != nil {
         return nil, err
     }
