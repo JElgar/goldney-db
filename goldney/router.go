@@ -31,7 +31,7 @@ func (e *Env) newTile (c *gin.Context){
     var t models.Tile
     c.BindJSON(&t)
 
-    _, err := e.db.CreateTile(&t)
+    _, err := e.db.AddTile(&t)
     if err != nil && err.Code == 409 {
         c.JSON(err.Code, err)
         return
