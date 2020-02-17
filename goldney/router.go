@@ -3,10 +3,24 @@ package main
 import (
    "github.com/gin-gonic/gin"
    models "jameselgar.com/goldney/models"
+  "github.com/gin-contrib/cors"
 )
 
 func SetupRouter(env *Env) *gin.Engine {
     r := gin.Default()
+    //r.Use(cors.New(cors.Config{
+	//	AllowOrigins:     []string{"https://goldneyhall.com", "https://create.goldneyhall.com"},
+	//	AllowMethods:     []string{"PUT", "PATCH", "GET"},
+	//	AllowHeaders:     []string{"Origin"},
+	//}))
+    r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"https://create.goldneyhall.com"},
+		AllowMethods:     []string{"POST", "PUT", "PATCH"},
+		AllowHeaders:     []string{"Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
+	}))
+
+    r.Use(cors.Default())
 
     // This was required for local testing
     //r.Use(cors.Default())
