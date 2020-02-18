@@ -34,6 +34,7 @@ func (db *DB) AddTile (t *Tile) (*Tile, *errors.ApiError) {
   fmt.Println("Adding section")
 
   for _, s := range t.Sections {
+    fmt.Println("Adding section")
     s.Tile_id = id
     a, err := db.AddSection(&s)
     if err != nil {

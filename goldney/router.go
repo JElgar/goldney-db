@@ -4,6 +4,7 @@ import (
    "github.com/gin-gonic/gin"
    models "jameselgar.com/goldney/models"
   "github.com/gin-contrib/cors"
+  "fmt"
 )
 
 func SetupRouter(env *Env) *gin.Engine {
@@ -20,7 +21,7 @@ func SetupRouter(env *Env) *gin.Engine {
 		ExposeHeaders:    []string{"Content-Length"},
 	}))
 
-    r.Use(cors.Default())
+    //r.Use(cors.Default())
 
     // This was required for local testing
     //r.Use(cors.Default())
@@ -44,6 +45,8 @@ func (e *Env) newTile (c *gin.Context){
     // TODO on success return user and enventually JSON web token
     var t models.Tile
     c.BindJSON(&t)
+
+    fmt.Println(t)
 
     _, err := e.db.AddTile(&t)
     if err != nil && err.Code == 409 {
