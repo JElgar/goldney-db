@@ -6,7 +6,6 @@ import(
 )
 
 type TileStore interface {
-  CreateTile (t *Tile) (*Tile, *errors.ApiError)
   GetTiles () ([]Tile, *errors.ApiError)
   AddTile (t *Tile) (*Tile, *errors.ApiError)
   AddSection (s *Section) (int, *errors.ApiError)
