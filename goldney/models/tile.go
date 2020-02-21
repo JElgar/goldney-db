@@ -8,6 +8,8 @@ import(
 type TileStore interface {
   CreateTile (t *Tile) (*Tile, *errors.ApiError)
   GetTiles () ([]Tile, *errors.ApiError)
+  AddTile (t *Tile) (*Tile, *errors.ApiError)
+  AddSection (s *Section) (int, *errors.ApiError)
 }
 
 type Tile struct {
@@ -18,20 +20,31 @@ type Tile struct {
     Email         string    `json:"email"`
 }
 
-func (db *DB) CreateTile (t *Tile) (*Tile, *errors.ApiError) {
+func (db *DB) AddTile (t *Tile) (*Tile, *errors.ApiError) {
+  fmt.Println("Adding tile")
   // Temporarily got rid of sections
-  sqlStmt := `INSERT INTO tiles (title, subtitle, description, email) VALUES($1,$2, $3, $4);`
-
-  res, insertErr := db.Exec(sqlStmt, t.Title, t.Subtitle, t.Description, t.Email)
+  sqlStmt := `INSERT INTO tiles (title, subtitle, description, email) VALUES($1,$2, $3, $4) RETURNING id;`
+  var id int
+  insertErr := db.QueryRow(sqlStmt, t.Title, t.Subtitle, t.Description, t.Email).Scan(&id)
   switch insertErr{
   case nil:
-    fmt.Println("User inserted")
-    fmt.Println(res)
-    return t, nil
+    fmt.Println("Tile has been added to db")
   default:
     return t, &errors.ApiError{insertErr, "Unknown Error during Insertion of User", 400}
-        }
+  }
+  
+  fmt.Println("Adding section")
 
+  for _, s := range t.Sections {
+    fmt.Println("Adding section")
+    s.Tile_id = id
+    a, err := db.AddSection(&s)
+    if err != nil {
+      return t, &errors.ApiError{err, "Error inserting Section", 400}
+    }
+    fmt.Println(a)
+  }
+  return t, nil
 }
 
 func (db *DB) GetTiles () ([]Tile, *errors.ApiError) {
