@@ -60,5 +60,10 @@ func (e *Env) newTile (c *gin.Context){
 }
 
 func (e *Env) getTiles (c *gin.Context) {
-    e.db.GetTiles()
+  tiles, err := e.db.GetTiles()
+  if err != nil {
+    c.JSON(err.Code, err)
+    return
+  }
+  c.JSON(200, tiles)
 }
