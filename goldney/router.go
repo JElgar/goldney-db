@@ -16,6 +16,7 @@ func SetupRouter(env *Env) *gin.Engine {
     // An end point to test onnection works
     api.GET("/ping", ping)
     api.POST("/newTile", env.newTile)
+    api.GET("/getTiles", env.getTiles)
 
     return r
 }
@@ -39,4 +40,8 @@ func (e *Env) newTile (c *gin.Context){
         c.JSON(err.Code, err)
         return
     }
+}
+
+func (e *Env) getTiles (c *gin.Context) {
+    e.db.GetTiles()
 }

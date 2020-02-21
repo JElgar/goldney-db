@@ -7,6 +7,7 @@ import(
 
 type TileStore interface {
   CreateTile (t *Tile) (*Tile, *errors.ApiError)
+  GetTiles () ([]Tile, *errors.ApiError)
 }
 
 type Tile struct {
@@ -31,4 +32,23 @@ func (db *DB) CreateTile (t *Tile) (*Tile, *errors.ApiError) {
     return t, &errors.ApiError{insertErr, "Unknown Error during Insertion of User", 400}
         }
 
+}
+
+func (db *DB) GetTiles () ([]Tile, *errors.ApiError) {
+  var tiles []Tile
+  rows, err := db.Query("SELECT * FROM tiles")
+    if err != nil {
+      return nil, &errors.ApiError{err, "Error whilst accessing tiles from database", 400}
+    }
+    defer rows.Close()
+    println(rows)
+    for rows.Next() {
+        var tile Tile
+        if err := rows.Scan(tile); err != nil {
+            return nil, &errors.ApiError{err, "Error whilst accessing tiles from database", 400}
+        }
+        tiles = append(tiles, tile)
+        fmt.Println(tile)
+    }
+    return tiles, nil
 }
