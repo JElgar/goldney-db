@@ -18,6 +18,7 @@ type Tile struct {
     Description   string    `json:"description"`
     Sections      []Section `json:"sections"`
     Email         string    `json:"email"`
+    Id            int       `json:"id"`
 }
 
 func (db *DB) AddTile (t *Tile) (*Tile, *errors.ApiError) {
@@ -57,13 +58,12 @@ func (db *DB) GetTiles () ([]Tile, *errors.ApiError) {
     for rows.Next() {
         fmt.Println("Rows")
         var tile Tile
-        var id int
-        if err := rows.Scan(&id, &tile.Title, &tile.Subtitle, &tile.Description, &tile.Email); err != nil {
+        if err := rows.Scan(&tile.Id, &tile.Title, &tile.Subtitle, &tile.Description, &tile.Email); err != nil {
           panic(err)
             return nil, &errors.ApiError{err, "Error whilst accessing tiles from database", 400}
         }
        
-        s, sectionErr := db.GetSections(id)
+        s, sectionErr := db.GetSections(tile.Id)
         if sectionErr != nil {
             return nil, &errors.ApiError{err, "Error accessing sections for tile", 400}
         }
