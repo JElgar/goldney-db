@@ -6,9 +6,10 @@ import(
 )
 
 type TileStore interface {
-  GetTiles () ([]Tile, *errors.ApiError)
   AddTile (t *Tile) (*Tile, *errors.ApiError)
+  GetTiles () ([]Tile, *errors.ApiError)
   AddSection (s *Section) (int, *errors.ApiError)
+  GetSections (id int) ([]Section, *errors.ApiError)
 }
 
 type Tile struct {
@@ -53,14 +54,22 @@ func (db *DB) GetTiles () ([]Tile, *errors.ApiError) {
       return nil, &errors.ApiError{err, "Error whilst accessing tiles from database", 400}
     }
     defer rows.Close()
-    println(rows)
     for rows.Next() {
+        fmt.Println("Rows")
         var tile Tile
-        if err := rows.Scan(tile); err != nil {
+        var id int
+        if err := rows.Scan(&id, &tile.Title, &tile.Subtitle, &tile.Description, &tile.Email); err != nil {
+          panic(err)
             return nil, &errors.ApiError{err, "Error whilst accessing tiles from database", 400}
         }
+       
+        s, sectionErr := db.GetSections(id)
+        if sectionErr != nil {
+            return nil, &errors.ApiError{err, "Error accessing sections for tile", 400}
+        }
+        tile.Sections = s
         tiles = append(tiles, tile)
-        fmt.Println(tile)
+        fmt.Println(tile.Title)
     }
     return tiles, nil
 }
