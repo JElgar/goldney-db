@@ -9,6 +9,7 @@ type Section struct {
     Title         string    `json:"title"`
     Description   string    `json:"description"`
     Tile_id       int       `json:"tile_id"`
+    Type          string    `json:"type"`
 }
 
 //func CreateSection
@@ -31,7 +32,7 @@ func (db *DB) AddSection (s *Section) (int, *errors.ApiError) {
 
 func (db *DB) GetSections (id int) ([]Section, *errors.ApiError) {
   var sections []Section
-  rows, err := db.Query("SELECT title, description FROM sections WHERE tile_id=$1", id)
+  rows, err := db.Query("SELECT title, description, type FROM sections WHERE tile_id=$1", id)
     if err != nil {
           panic(err)
       return nil, &errors.ApiError{err, "Error whilst accessing sections from database", 400}
@@ -40,7 +41,7 @@ func (db *DB) GetSections (id int) ([]Section, *errors.ApiError) {
     for rows.Next() {
         fmt.Println("Sections")
         var section Section
-        if err := rows.Scan(&section.Title, &section.Description); err != nil {
+        if err := rows.Scan(&section.Title, &section.Description, &section.Type); err != nil {
           panic(err)
             return nil, &errors.ApiError{err, "Error whilst accessing tiles from database", 400}
         }

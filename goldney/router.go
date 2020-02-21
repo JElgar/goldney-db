@@ -57,6 +57,7 @@ func (e *Env) newTile (c *gin.Context){
         c.JSON(err.Code, err)
         return
     }
+    c.JSON(200, "Success")
 }
 
 func (e *Env) getTiles (c *gin.Context) {
