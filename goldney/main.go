@@ -9,7 +9,8 @@ import (
 
 // Stuct to store environment variables for application
 type Env struct {
-    db models.Datastore
+    db models.Datastore // Currently in production this is postgres
+    da models.AssetsDatastore // Currently in production this is s3
 }
 
 func main() {
@@ -21,7 +22,9 @@ func main() {
     if err != nil {
         log.Panic(err)
     }
-    env := &Env{db: db}
+
+    da, err := models.InitAssetsDatastore()
+    env := &Env{db: db, da: da}
 
     //Gin stuff
     r := SetupRouter(env)
