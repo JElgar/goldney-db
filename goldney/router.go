@@ -32,6 +32,8 @@ func SetupRouter(env *Env) *gin.Engine {
     api.GET("/ping", ping)
     api.POST("/newTile", env.newTile)
     api.GET("/getTiles", env.getTiles)
+    
+    api.POST("/uplaodImage", env.uploadImage)
 
     return r
 }
@@ -67,4 +69,18 @@ func (e *Env) getTiles (c *gin.Context) {
     return
   }
   c.JSON(200, tiles)
+}
+
+func (e * Env) uploadImage (c *gin.Context) {
+  fileHeader, err := c.FormFile("file")
+  if err != nil {
+    c.JSON(err.Code, err)
+    return
+  }
+  f, err := fileHeader.Open()
+  if err != nil {
+    c.JSON(err.Code, err)
+    return
+  }
+  err = e.db.ImageStore(fileHeader.fileName, f)
 }
