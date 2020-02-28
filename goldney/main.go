@@ -23,7 +23,7 @@ func main() {
         log.Panic(err)
     }
 
-    da, err := models.InitAssetsDatastore()
+    da, err := models.InitAssetsDatastore(os.Getenv("AWS_KEY_ID"), os.Getenv("AWS_KEY"), os.Getenv("AWS_TOKEN"))
     if err != nil {
         log.Panic(err)
     }

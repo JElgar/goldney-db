@@ -4,6 +4,7 @@ import (
     "github.com/aws/aws-sdk-go/aws"
     "github.com/aws/aws-sdk-go/aws/session"
     "github.com/aws/aws-sdk-go/service/s3"
+    "github.com/aws/aws-sdk-go/aws/credentials"
     "fmt"
     errors "jameselgar.com/goldney/errors"
     "mime/multipart"
@@ -17,14 +18,19 @@ type DA struct {
   *s3.S3
 }
 
-func InitAssetsDatastore() (*DA, *errors.ApiError) {
+func InitAssetsDatastore(aws_access_key_id, aws_secret_access_key, aws_session_token string) (*DA, *errors.ApiError) {
   sess, err := session.NewSession(&aws.Config{
-      Region: aws.String("us-west-2"),
-    })
+      Region: aws.String("us-east-1"),
+      Credentials: credentials.NewStaticCredentials(
+       aws_access_key_id,   // id
+       aws_secret_access_key, // key
+       aws_session_token),  // token can be left blank for now
+  })
   svc := s3.New(sess)
 
   result, err := svc.ListBuckets(nil)
   if err != nil {
+    panic(err)
     return nil, &errors.ApiError{err, "Error listing buckets", 418}
   }
   
