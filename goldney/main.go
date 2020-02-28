@@ -3,6 +3,7 @@ package main
 import (
 //   "database/sql"
   models "jameselgar.com/goldney/models"
+  secret "jameselgar.com/goldney/secret"
   "log"
   "os"
 )
@@ -23,7 +24,7 @@ func main() {
         log.Panic(err)
     }
 
-    da, err := models.InitAssetsDatastore(os.Getenv("AWS_KEY_ID"), os.Getenv("AWS_KEY"), os.Getenv("AWS_TOKEN"))
+    da, err := models.InitAssetsDatastore(secret.AWS_KEY_ID, secret.AWS_KEY, secret.AWS_TOKEN)
     if err != nil {
         log.Panic(err)
     }

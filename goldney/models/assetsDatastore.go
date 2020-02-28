@@ -19,6 +19,11 @@ type DA struct {
 }
 
 func InitAssetsDatastore(aws_access_key_id, aws_secret_access_key, aws_session_token string) (*DA, *errors.ApiError) {
+  fmt.Println("Credentials thing")
+  fmt.Println(aws_access_key_id)
+  fmt.Println(aws_secret_access_key)
+  fmt.Println(aws_session_token)
+  fmt.Println("End credentials thing")
   sess, err := session.NewSession(&aws.Config{
       Region: aws.String("us-east-1"),
       Credentials: credentials.NewStaticCredentials(
