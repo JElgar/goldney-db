@@ -18,7 +18,7 @@ type DA struct {
   *s3.S3
 }
 
-func InitAssetsDatastore(aws_access_key_id, aws_secret_access_key, aws_session_token string) (*DA, *errors.ApiError) {
+func InitAssetsDatastore(aws_access_key_id, aws_secret_access_key, aws_session_token string) (*DA, error) {
   fmt.Println("Credentials thing")
   fmt.Println(aws_access_key_id)
   fmt.Println(aws_secret_access_key)
@@ -36,7 +36,7 @@ func InitAssetsDatastore(aws_access_key_id, aws_secret_access_key, aws_session_t
   result, err := svc.ListBuckets(nil)
   if err != nil {
     panic(err)
-    return nil, &errors.ApiError{err, "Error listing buckets", 418}
+    return nil, err
   }
   
   fmt.Println("Buckets:")
@@ -46,6 +46,7 @@ func InitAssetsDatastore(aws_access_key_id, aws_secret_access_key, aws_session_t
     aws.StringValue(b.Name), aws.TimeValue(b.CreationDate))
   }
 
+  fmt.Println("Returning the thing")
   return &DA{svc}, nil
 }
 
