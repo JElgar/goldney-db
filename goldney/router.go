@@ -74,13 +74,13 @@ func (e *Env) getTiles (c *gin.Context) {
 func (e * Env) uploadImage (c *gin.Context) {
   fileHeader, err := c.FormFile("file")
   if err != nil {
-    c.JSON(err.Code, err)
+    c.JSON(400, err)
     return
   }
   f, err := fileHeader.Open()
   if err != nil {
-    c.JSON(err.Code, err)
+    c.JSON(400, err)
     return
   }
-  err = e.db.ImageStore(fileHeader.fileName, f)
+  err = e.da.ImageStore(f)
 }
