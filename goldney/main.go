@@ -6,6 +6,7 @@ import (
   secret "jameselgar.com/goldney/secret"
   "log"
   "os"
+  "fmt"
 )
 
 // Stuct to store environment variables for application
@@ -26,12 +27,14 @@ func main() {
 
     da, err := models.InitAssetsDatastore(secret.AWS_KEY_ID, secret.AWS_KEY, secret.AWS_TOKEN)
     if err != nil {
+        fmt.Println("I relly shouldn't be paiced here")
         log.Panic(err)
     }
 
     env := &Env{db: db, da: da}
 
     //Gin stuff
+    fmt.Println("Im gonna go setup the routers")
     r := SetupRouter(env)
     r.Run(":8080")
 }
