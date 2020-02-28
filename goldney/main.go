@@ -24,6 +24,10 @@ func main() {
     }
 
     da, err := models.InitAssetsDatastore()
+    if err != nil {
+        log.Panic(err)
+    }
+
     env := &Env{db: db, da: da}
 
     //Gin stuff
