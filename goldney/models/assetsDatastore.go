@@ -6,12 +6,14 @@ import (
     "github.com/aws/aws-sdk-go/service/s3"
     "github.com/aws/aws-sdk-go/aws/credentials"
     "fmt"
-    errors "jameselgar.com/goldney/errors"
     "mime/multipart"
+    "bytes"
+    "net/http"
+    "path/filepath"
 )
 
 type AssetsDatastore interface {
-  ImageStore(f multipart.File) (*errors.ApiError)
+  ImageStore(file multipart.File, fileHeader *multipart.FileHeader) (string, error)
 }
 
 type DA struct {
@@ -50,6 +52,33 @@ func InitAssetsDatastore(aws_access_key_id, aws_secret_access_key, aws_session_t
   return &DA{svc}, nil
 }
 
-func (da *DA) ImageStore(f multipart.File) (*errors.ApiError) {
-  return nil
+func (da *DA) ImageStore(file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
+    // get the file size and read
+  // the file content into a buffer
+  size := fileHeader.Size
+  buffer := make([]byte, size)
+  file.Read(buffer)
+
+  // create a unique file name for the file
+  tempFileName := "pictures/" + filepath.Ext(fileHeader.Filename)
+	
+  // config settings: this is where you choose the bucket,
+  // filename, content-type and storage class of the file
+  // you're uploading
+  _, err := da.S3.PutObject(&s3.PutObjectInput{
+     Bucket:               aws.String("goldney"),
+     Key:                  aws.String(tempFileName),
+     ACL:                  aws.String("public-read"),// could be private if you want it to be access by only authorized users
+     Body:                 bytes.NewReader(buffer),
+     ContentLength:        aws.Int64(int64(size)),
+     ContentType:        aws.String(http.DetectContentType(buffer)),
+     //ContentDisposition:   aws.String("attachment"),
+     //ServerSideEncryption: aws.String("AES256"),
+     //StorageClass:         aws.String("INTELLIGENT_TIERING"),
+  })
+  if err != nil {
+     return "", err
+  }
+
+  return tempFileName, err
 }

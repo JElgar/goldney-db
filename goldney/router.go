@@ -82,5 +82,10 @@ func (e * Env) uploadImage (c *gin.Context) {
     c.JSON(400, err)
     return
   }
-  err = e.da.ImageStore(f)
+  ans, err := e.da.ImageStore(f, fileHeader)
+  if err != nil {
+    c.JSON(400, err)
+    return
+  }
+  fmt.Println(ans)
 }
