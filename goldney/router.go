@@ -8,6 +8,7 @@ import (
 )
 
 func SetupRouter(env *Env) *gin.Engine {
+    //gin.SetMode(gin.releaseMode)
     r := gin.Default()
     //r.Use(cors.New(cors.Config{
 	//	AllowOrigins:     []string{"https://goldneyhall.com", "https://create.goldneyhall.com"},
@@ -33,7 +34,7 @@ func SetupRouter(env *Env) *gin.Engine {
     api.POST("/newTile", env.newTile)
     api.GET("/getTiles", env.getTiles)
     
-    api.POST("/uplaodImage", env.uploadImage)
+    api.POST("/uploadImage", env.uploadImage)
 
     return r
 }
@@ -72,7 +73,8 @@ func (e *Env) getTiles (c *gin.Context) {
 }
 
 func (e * Env) uploadImage (c *gin.Context) {
-  fileHeader, err := c.FormFile("file")
+  fmt.Println("uplaoding image endpoint reached")
+  fileHeader, err := c.FormFile("undefined")
   if err != nil {
     panic(err)
     c.JSON(401, err)
@@ -83,11 +85,17 @@ func (e * Env) uploadImage (c *gin.Context) {
     c.JSON(402, err)
     return
   }
-  ans, err := e.da.ImageStore(f, fileHeader)
+  fmt.Println("doing the uploaidng")
+  fileName, err := e.da.ImageStore(f, fileHeader)
+  fmt.Println("did the uploaidng")
   if err != nil {
+    fmt.Println("panicing error")
     panic(err)
     c.JSON(403, err)
     return
   }
-  fmt.Println(ans)
+  fmt.Println("uplaoded the image")
+  fmt.Println(fileName)
+  c.JSON(200, fileName)
+
 }

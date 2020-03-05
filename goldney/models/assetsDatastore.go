@@ -10,6 +10,7 @@ import (
     "bytes"
     "net/http"
     "path/filepath"
+    "time"
 )
 
 type AssetsDatastore interface {
@@ -58,9 +59,10 @@ func (da *DA) ImageStore(file multipart.File, fileHeader *multipart.FileHeader) 
   size := fileHeader.Size
   buffer := make([]byte, size)
   file.Read(buffer)
+  now := time.Now().String()
 
   // create a unique file name for the file
-  tempFileName := "pictures/" + "public?"  + filepath.Ext(fileHeader.Filename)
+  tempFileName := "pictures/" + fileHeader.Filename  + now + filepath.Ext(fileHeader.Filename)
 	
   // config settings: this is where you choose the bucket,
   // filename, content-type and storage class of the file
