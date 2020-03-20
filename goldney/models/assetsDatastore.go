@@ -22,11 +22,34 @@ type DA struct {
 }
 
 func InitAssetsDatastore(aws_access_key_id, aws_secret_access_key, aws_session_token string) (*DA, error) {
+  creds := credentials.NewEnvCredentials()
+
+  // Retrieve the credentials value
+  credValue, err := creds.Get()
+  if err != nil {
+    panic(err)
+  }
+
   fmt.Println("Credentials thing")
   fmt.Println(aws_access_key_id)
   fmt.Println(aws_secret_access_key)
   fmt.Println(aws_session_token)
   fmt.Println("End credentials thing")
+  
+  fmt.Println("Credentials thing 2")
+  fmt.Println(credValue.AccessKeyID)
+  fmt.Println(credValue.SecretAccessKey)
+  fmt.Println(credValue.SessionToken)
+  fmt.Println("End credentials thing")
+  
+  //sess, err := session.NewSession(&aws.Config{
+  //    Region: aws.String("us-east-1"),
+  //    Credentials: credentials.NewStaticCredentials(
+  //     aws_access_key_id,   // id
+  //     aws_secret_access_key, // key
+  //     aws_session_token),  // token can be left blank for now
+  //})
+  //svc := s3.New(sess)
   sess, err := session.NewSession(&aws.Config{
       Region: aws.String("us-east-1"),
       Credentials: credentials.NewStaticCredentials(
@@ -81,6 +104,7 @@ func (da *DA) ImageStore(file multipart.File, fileHeader *multipart.FileHeader) 
   if err != nil {
      return "", err
   }
-
+  
+  fmt.Println("You just uploaded: " + tempFileName)
   return tempFileName, err
 }

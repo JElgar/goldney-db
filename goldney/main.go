@@ -4,6 +4,7 @@ import (
 //   "database/sql"
   models "jameselgar.com/goldney/models"
   secret "jameselgar.com/goldney/secret"
+  "github.com/joho/godotenv"
   "log"
   "os"
   "fmt"
@@ -18,6 +19,10 @@ type Env struct {
 func main() {
     // Setup inital config for sever
     // config.InitConfig()
+    err := godotenv.Load()
+    if err != nil {
+      log.Fatal("Error loading .env file")
+    }
 
     // Set up connection to postgres
     db, err := models.InitDB(os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD") )
