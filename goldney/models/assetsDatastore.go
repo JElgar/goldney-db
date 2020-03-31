@@ -22,7 +22,7 @@ type DA struct {
 }
 
 func InitAssetsDatastore(aws_access_key_id, aws_secret_access_key, aws_session_token string) (*DA, error) {
-  creds := credentials.NewEnvCredentials()
+  creds := credentials.NewStaticCredentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
 
   // Retrieve the credentials value
   credValue, err := creds.Get()
@@ -53,9 +53,9 @@ func InitAssetsDatastore(aws_access_key_id, aws_secret_access_key, aws_session_t
   sess, err := session.NewSession(&aws.Config{
       Region: aws.String("us-east-1"),
       Credentials: credentials.NewStaticCredentials(
-       aws_access_key_id,   // id
-       aws_secret_access_key, // key
-       aws_session_token),  // token can be left blank for now
+       credValue.AccessKeyID,   // id
+       credValue.SecretAccessKey, // key
+       ""),  // token can be left blank for now
   })
   svc := s3.New(sess)
 
