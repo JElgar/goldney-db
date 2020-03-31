@@ -18,7 +18,7 @@ type AssetsDatastore interface {
 }
 
 type DA struct {
-  *s3.S3
+  s3 *s3.S3
 }
 
 // Used to set up s3 with inital credentials
@@ -85,7 +85,7 @@ func (da *DA) updateS3Session () {
       Region: aws.String("us-east-1"),
       Credentials: creds  })
   svc := s3.New(sess)
-  da.svc = svc
+  da.s3.svc = svc
 }
 
 func (da *DA) ImageStore(file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
