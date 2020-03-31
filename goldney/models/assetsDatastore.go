@@ -21,6 +21,7 @@ type DA struct {
   *s3.S3
 }
 
+// Used to set up s3 with inital credentials
 func InitAssetsDatastore(aws_access_key_id, aws_secret_access_key, aws_session_token string) (*DA, error) {
   creds := credentials.NewStaticCredentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
   creds.Expire()
@@ -70,6 +71,21 @@ func InitAssetsDatastore(aws_access_key_id, aws_secret_access_key, aws_session_t
 
   fmt.Println("Returning the thing")
   return &DA{svc}, nil
+}
+
+func (da *DA) updateS3Session () {
+  creds := da.svc.creds
+  creds.Expire()
+  // Retrieve the credentials value
+  credValue, err := creds.Get()
+  if err != nil {
+    panic(err)
+  }
+  sess, err := session.NewSession(&aws.Config{
+      Region: aws.String("us-east-1"),
+      Credentials: creds  })
+  svc := s3.New(sess)
+  da.svc = svc
 }
 
 func (da *DA) ImageStore(file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
