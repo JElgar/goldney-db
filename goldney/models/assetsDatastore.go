@@ -11,6 +11,7 @@ import (
     "net/http"
     "path/filepath"
     "time"
+    "github.com/robfig/cron/v3"
 )
 
 type AssetsDatastore interface {
@@ -69,8 +70,14 @@ func InitAssetsDatastore(aws_access_key_id, aws_secret_access_key, aws_session_t
     aws.StringValue(b.Name), aws.TimeValue(b.CreationDate))
   }
 
+  // set up cron job to refresh creds every hour
+  da := DA{scv}
+  c := cron.New()
+  c.AddFunc("30 * * * *", da.updateS3Session())
+
+
   fmt.Println("Returning the thing")
-  return &DA{svc}, nil
+  return &da, nil
 }
 
 func (da *DA) updateS3Session () {
