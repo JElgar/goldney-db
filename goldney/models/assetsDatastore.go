@@ -11,7 +11,6 @@ import (
     "net/http"
     "path/filepath"
     "time"
-    "github.com/robfig/cron/v3"
 )
 
 type AssetsDatastore interface {
@@ -26,37 +25,14 @@ type DA struct {
 
 // Used to set up s3 with inital credentials
 func InitAssetsDatastore(aws_access_key_id, aws_secret_access_key, aws_session_token string) (*DA, error) {
-  creds := credentials.NewStaticCredentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
-  creds.Expire()
-  // Retrieve the credentials value
-  credValue, err := creds.Get()
-  if err != nil {
-    panic(err)
-  }
-
-  fmt.Println("Credentials thing")
-  fmt.Println(aws_access_key_id)
-  fmt.Println(aws_secret_access_key)
-  fmt.Println(aws_session_token)
-  fmt.Println("End credentials thing")
   
-  fmt.Println("Credentials thing 2")
-  fmt.Println(credValue.AccessKeyID)
-  fmt.Println(credValue.SecretAccessKey)
-  fmt.Println(credValue.SessionToken)
-  fmt.Println("End credentials thing")
-  
-  //sess, err := session.NewSession(&aws.Config{
-  //    Region: aws.String("us-east-1"),
-  //    Credentials: credentials.NewStaticCredentials(
-  //     aws_access_key_id,   // id
-  //     aws_secret_access_key, // key
-  //     aws_session_token),  // token can be left blank for now
-  //})
-  //svc := s3.New(sess)
   sess, err := session.NewSession(&aws.Config{
-      Region: aws.String("us-east-1"),
-      Credentials: creds  })
+      Region: aws.String("eu-west-2"),
+      Credentials: credentials.NewStaticCredentials(
+       aws_access_key_id,   // id
+       aws_secret_access_key, // key
+       aws_session_token),  // token can be left blank for now
+  })
   svc := s3.New(sess)
 
   result, err := svc.ListBuckets(nil)
@@ -74,12 +50,6 @@ func InitAssetsDatastore(aws_access_key_id, aws_secret_access_key, aws_session_t
 
   // set up cron job to refresh creds every hour
   da := DA{svc, sess}
-  c := cron.New()
-  //c.AddFunc("30 * * * *", da.UpdateSession)
-  c.AddFunc("@every 1m", da.UpdateSession)
-  c.Start()
-
-  fmt.Println("Returning the thing")
   return &da, nil
 }
 
@@ -136,7 +106,7 @@ func (da *DA) ImageStore(file multipart.File, fileHeader *multipart.FileHeader) 
   // filename, content-type and storage class of the file
   // you're uploading
   _, err := da.S3.PutObject(&s3.PutObjectInput{
-     Bucket:               aws.String("goldney"),
+     Bucket:               aws.String("goldney-james"),
      Key:                  aws.String(tempFileName),
      ACL:                  aws.String("public-read"),// could be private if you want it to be access by only authorized users
      Body:                 bytes.NewReader(buffer),
