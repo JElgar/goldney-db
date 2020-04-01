@@ -2,7 +2,7 @@ package models
 
 import (
     "github.com/aws/aws-sdk-go/aws"
-    "github.com/aws/aws-sdk-go/aws/session"
+    session "github.com/aws/aws-sdk-go/aws/session"
     "github.com/aws/aws-sdk-go/service/s3"
     "github.com/aws/aws-sdk-go/aws/credentials"
     "fmt"
@@ -18,7 +18,8 @@ type AssetsDatastore interface {
 }
 
 type DA struct {
-  s3 *s3.S3
+  S3 *s3.S3
+  Session *session.Session
 }
 
 // Used to set up s3 with inital credentials
@@ -70,14 +71,14 @@ func InitAssetsDatastore(aws_access_key_id, aws_secret_access_key, aws_session_t
   }
 
   fmt.Println("Returning the thing")
-  return &DA{svc}, nil
+  return &DA{svc, sess}, nil
 }
 
 func (da *DA) updateS3Session () {
-  creds := da.svc.creds
+  creds := da.Session.Config.Credentials
   creds.Expire()
   // Retrieve the credentials value
-  credValue, err := creds.Get()
+  _ , err := creds.Get()
   if err != nil {
     panic(err)
   }
@@ -85,7 +86,8 @@ func (da *DA) updateS3Session () {
       Region: aws.String("us-east-1"),
       Credentials: creds  })
   svc := s3.New(sess)
-  da.s3.svc = svc
+  da.Session = sess
+  da.S3 = svc
 }
 
 func (da *DA) ImageStore(file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
