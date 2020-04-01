@@ -16,6 +16,7 @@ import (
 
 type AssetsDatastore interface {
   ImageStore(file multipart.File, fileHeader *multipart.FileHeader) (string, error)
+  UpdateSession()
 }
 
 type DA struct {
@@ -72,26 +73,49 @@ func InitAssetsDatastore(aws_access_key_id, aws_secret_access_key, aws_session_t
   }
 
   // set up cron job to refresh creds every hour
-  da := DA{scv}
+  da := DA{svc, sess}
   c := cron.New()
-  c.AddFunc("30 * * * *", da.updateS3Session())
-
+  //c.AddFunc("30 * * * *", da.UpdateSession)
+  c.AddFunc("@every 1m", da.UpdateSession)
+  c.Start()
 
   fmt.Println("Returning the thing")
   return &da, nil
 }
 
-func (da *DA) updateS3Session () {
+func (da *DA) UpdateSession () {
+  fmt.Println("Updating S3 Session")
   creds := da.Session.Config.Credentials
-  creds.Expire()
-  // Retrieve the credentials value
-  _ , err := creds.Get()
+  oldCreds, err := creds.Get()
   if err != nil {
     panic(err)
   }
+  
+  // Print old crednetials
+  fmt.Println("Old Credentials")
+  fmt.Println(oldCreds.AccessKeyID)
+  fmt.Println(oldCreds.SecretAccessKey)
+  fmt.Println(oldCreds.SessionToken)
+  fmt.Println("")
+  
+  da.Session.Config.Credentials.Expire()
+  // Retrieve the credentials value
+  newCreds , err := da.Session.Config.Credentials.Get()
+  if err != nil {
+    panic(err)
+  }
+  
   sess, err := session.NewSession(&aws.Config{
       Region: aws.String("us-east-1"),
-      Credentials: creds  })
+      Credentials: da.Session.Config.Credentials  })
+  
+  // Print new crednetials
+  fmt.Println("New Credentials")
+  fmt.Println(newCreds.AccessKeyID)
+  fmt.Println(newCreds.SecretAccessKey)
+  fmt.Println(newCreds.SessionToken)
+  fmt.Println("")
+
   svc := s3.New(sess)
   da.Session = sess
   da.S3 = svc
