@@ -16,7 +16,8 @@ func SetupRouter(env *Env) *gin.Engine {
 	//	AllowHeaders:     []string{"Origin"},
 	//}))
     r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://create.goldneyhall.com"},
+      //AllowOrigins:     []string{"https://create.goldneyhall.com, http://localhost:3001"},
+        AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"POST", "PUT", "PATCH"},
 		AllowHeaders:     []string{"Origin"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -66,6 +67,7 @@ func (e *Env) newTile (c *gin.Context){
 func (e *Env) getTiles (c *gin.Context) {
   tiles, err := e.db.GetTiles()
   if err != nil {
+    panic(err)
     c.JSON(err.Code, err)
     return
   }

@@ -49,12 +49,15 @@ func (db *DB) AddTile (t *Tile) (*Tile, *errors.ApiError) {
 }
 
 func (db *DB) GetTiles () ([]Tile, *errors.ApiError) {
+  fmt.Println("Getting tiles")
   var tiles []Tile
   rows, err := db.Query("SELECT * FROM tiles")
     if err != nil {
+      panic(err)
       return nil, &errors.ApiError{err, "Error whilst accessing tiles from database", 400}
     }
     defer rows.Close()
+    fmt.Println("Got tiles")
     for rows.Next() {
         fmt.Println("Rows")
         var tile Tile
@@ -65,11 +68,13 @@ func (db *DB) GetTiles () ([]Tile, *errors.ApiError) {
        
         s, sectionErr := db.GetSections(tile.Id)
         if sectionErr != nil {
+            panic(err)
             return nil, &errors.ApiError{err, "Error accessing sections for tile", 400}
         }
         tile.Sections = s
         tiles = append(tiles, tile)
         fmt.Println(tile.Title)
     }
+    fmt.Println("Returned tiles")
     return tiles, nil
 }
