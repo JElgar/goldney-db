@@ -8,8 +8,10 @@ import(
 type TileStore interface {
   AddTile (t *Tile) (*Tile, *errors.ApiError)
   GetTiles () ([]Tile, *errors.ApiError)
+  UpdateTile (t *Tile) (*Tile, *errors.ApiError)
   AddSection (s *Section) (int, *errors.ApiError)
   GetSections (id int) ([]Section, *errors.ApiError)
+  UpdateSection (s *Section) (int, int, *errors.ApiError)
 }
 
 type Tile struct {
@@ -24,7 +26,10 @@ type Tile struct {
 func (db *DB) AddTile (t *Tile) (*Tile, *errors.ApiError) {
   fmt.Println("Adding tile")
   // Temporarily got rid of sections
-  sqlStmt := `INSERT INTO tiles (title, subtitle, description, email) VALUES($1,$2, $3, $4) RETURNING id;`
+  sqlStmt := `
+      INSERT INTO tiles (title, subtitle, description, email) 
+      VALUES($1,$2, $3, $4) 
+      RETURNING id;`
   var id int
   insertErr := db.QueryRow(sqlStmt, t.Title, t.Subtitle, t.Description, t.Email).Scan(&id)
   switch insertErr{
@@ -44,6 +49,66 @@ func (db *DB) AddTile (t *Tile) (*Tile, *errors.ApiError) {
       return t, &errors.ApiError{err, "Error inserting Section", 400}
     }
     fmt.Println(a)
+  }
+  return t, nil
+}
+
+func (db *DB) UpdateTile (t *Tile) (*Tile, *errors.ApiError) {
+  fmt.Println("Updating Tiles")
+//  sqlStmt := `
+//      UPDATE tiles 
+//      SET title = $1, 
+//          subtitle = &2, 
+//          description = $3, 
+//          email = $4 
+//      WHERE id = $5;`
+    sqlStmt := `UPDATE tiles 
+                SET title = $1,
+                    subtitle = $2,
+                    description = $3,
+                    email = $4 
+                WHERE id = $5;`
+ 
+  fmt.Println("Tile id is: ")
+  fmt.Println(t.Id)
+  fmt.Println(t.Title)
+  fmt.Println(t.Subtitle)
+  fmt.Println(t.Description)
+  fmt.Println(t.Email)
+  //res, updateErr := db.Exec(sqlStmt, t.Title, t.Subtitle, t.Description, t.Email, t.Id)
+  res, updateErr := db.Exec(sqlStmt, t.Title, t.Subtitle, t.Description, t.Email, int(t.Id))
+  if updateErr != nil {
+    panic(updateErr)
+    return nil, &errors.ApiError{updateErr, "Error updating", 400}
+  }
+  count, updateErr := res.RowsAffected()
+  if updateErr != nil {
+    panic(updateErr)
+    return nil, &errors.ApiError{updateErr, "Error updating", 400}
+  }
+  if count > 1 {
+    return nil, &errors.ApiError{updateErr, "uhoh more than 1 with id", 400}
+  }
+  if count < 1 {
+    return nil, &errors.ApiError{updateErr, "Could not find tile with given ID", 400}
+  }
+  fmt.Println("Updated Tile Data, now doing sections")
+  for _, s := range t.Sections {
+    fmt.Println("Adding section")
+    s.Tile_id = t.Id
+    _, c, err := db.UpdateSection(&s)
+    if err != nil {
+      panic(err)
+      return t, &errors.ApiError{err, "Error updating Section", 400}
+    }
+    // If the section with that id doesnt already exist add it
+    if c == 0 {
+      _, err := db.AddSection(&s)
+      if err != nil {
+        panic(err)
+        return t, &errors.ApiError{err, "Error inserting new Section", 400}
+      }
+    }
   }
   return t, nil
 }

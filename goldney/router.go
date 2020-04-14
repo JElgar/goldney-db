@@ -33,6 +33,7 @@ func SetupRouter(env *Env) *gin.Engine {
     // An end point to test onnection works
     api.GET("/ping", ping)
     api.POST("/newTile", env.newTile)
+    api.POST("/updateTile", env.updateTile)
     api.GET("/getTiles", env.getTiles)
     
     api.POST("/uploadImage", env.uploadImage)
@@ -72,6 +73,22 @@ func (e *Env) getTiles (c *gin.Context) {
     return
   }
   c.JSON(200, tiles)
+}
+
+func (e *Env) updateTile (c *gin.Context) {
+  var t models.Tile
+  c.BindJSON(&t)
+  fmt.Println(t)
+
+  _, err := e.db.UpdateTile(&t)
+  if err != nil && err.Code == 409 {
+      c.JSON(err.Code, err)
+      return
+  } else if err != nil {
+      c.JSON(err.Code, err)
+      return
+  }
+  c.JSON(200, "Successfully updated")
 }
 
 func (e * Env) uploadImage (c *gin.Context) {

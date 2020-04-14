@@ -13,6 +13,7 @@ type Section struct {
     Type          string    `json:"type"`
     ImageName     string    `json:"image_name"`
     ImageLink     string    `json:"image_link"`
+    Id            int       `json:"id"`
 }
 
 //func CreateSection
@@ -41,9 +42,39 @@ func (db *DB) AddSection (s *Section) (int, *errors.ApiError) {
           }
 }
 
+func (db *DB) UpdateSection (s *Section) (int, int, *errors.ApiError) {
+    var res sql.Result
+    var insertErr error
+    if (s.Type == "text") {
+      sqlStmt := `UPDATE sections 
+                  SET title = $1, description = $2
+                  WHERE id=$3;`
+      res, insertErr = db.Exec(sqlStmt, s.Title, s.Description, s.Tile_id)
+    } else if (s.Type == "image") {
+      sqlStmt := `UPDATE sections 
+                  SET image_name = $1, image_link = $2 
+                  WHERE id=$3;`
+      res, insertErr = db.Exec(sqlStmt, s.ImageName, s.ImageLink, s.Id)
+    }
+    switch insertErr{
+    case nil:
+      var id int
+      fmt.Println("The id is::")
+      fmt.Println(res)
+//      fmt.Printf("Section has been added to db %d", res)
+      count, updateErr := res.RowsAffected()
+      if updateErr != nil {
+        return -1, 0, &errors.ApiError{updateErr, "Error updating", 400}
+      }
+      return id, int(count), nil
+    default:
+      return -1, 0, &errors.ApiError{insertErr, "Unknown Error during Insertion of User", 400}
+          }
+}
+
 func (db *DB) GetSections (id int) ([]Section, *errors.ApiError) {
   var sections []Section
-  rows, err := db.Query("SELECT title, description, type, image_link, image_name FROM sections WHERE tile_id=$1", id)
+  rows, err := db.Query("SELECT title, description, type, image_link, image_name, id FROM sections WHERE tile_id=$1", id)
     if err != nil {
           panic(err)
       return nil, &errors.ApiError{err, "Error whilst accessing sections from database", 400}
@@ -52,7 +83,7 @@ func (db *DB) GetSections (id int) ([]Section, *errors.ApiError) {
     for rows.Next() {
         fmt.Println("Sections")
         var section Section
-        if err := rows.Scan(&section.Title, &section.Description, &section.Type, &section.ImageLink, &section.ImageName); err != nil {
+        if err := rows.Scan(&section.Title, &section.Description, &section.Type, &section.ImageLink, &section.ImageName, &section.Id); err != nil {
           panic(err)
             return nil, &errors.ApiError{err, "Error whilst accessing tiles from database", 400}
         }
