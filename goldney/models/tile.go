@@ -14,6 +14,7 @@ type TileStore interface {
   GetSections (id int) ([]Section, *errors.ApiError)
   UpdateSection (s *Section) (int, int, *errors.ApiError)
   SetActive (t *Tile) *errors.ApiError
+  DeleteSection (id int) (*errors.ApiError)
 }
 
 type Tile struct {

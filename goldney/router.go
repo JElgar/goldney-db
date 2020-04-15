@@ -36,6 +36,7 @@ func SetupRouter(env *Env) *gin.Engine {
     api.POST("/updateTile", env.updateTile)
     api.GET("/getTiles", env.getTiles)
     api.GET("/getAllTiles", env.getAllTiles)
+    api.POST("/deleteSections", env.deleteSections)
     
     api.POST("/toggleActivateTile", env.setTileActive)
     
@@ -141,5 +142,24 @@ func (e *Env) setTileActive (c *gin.Context) {
   if err != nil {
     c.JSON(400, err)
   }
+  c.JSON(200, "Successfully updated active")
+}
+
+func (e *Env) deleteSections (c *gin.Context) {
+  fmt.Println("Deleting given section")
+  var sections = struct {
+    ids []int  `json:"sections"`
+  }{
+    []int{},
+  }
+  c.BindJSON(&sections)
+  fmt.Println(sections)
+  for id := range sections.ids {
+    e.db.DeleteSection(id)
+  }
+  //err := e.db.SetActive(&t)
+  //if err != nil {
+  //  c.JSON(400, err)
+  //}
   c.JSON(200, "Successfully updated active")
 }
