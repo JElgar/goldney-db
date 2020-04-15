@@ -35,6 +35,9 @@ func SetupRouter(env *Env) *gin.Engine {
     api.POST("/newTile", env.newTile)
     api.POST("/updateTile", env.updateTile)
     api.GET("/getTiles", env.getTiles)
+    api.GET("/getAllTiles", env.getAllTiles)
+    
+    api.POST("/toggleActivateTile", env.setTileActive)
     
     api.POST("/uploadImage", env.uploadImage)
 
@@ -66,7 +69,17 @@ func (e *Env) newTile (c *gin.Context){
 }
 
 func (e *Env) getTiles (c *gin.Context) {
-  tiles, err := e.db.GetTiles()
+  tiles, err := e.db.GetActiveTiles()
+  if err != nil {
+    panic(err)
+    c.JSON(err.Code, err)
+    return
+  }
+  c.JSON(200, tiles)
+}
+
+func (e *Env) getAllTiles (c *gin.Context) {
+  tiles, err := e.db.GetAllTiles()
   if err != nil {
     panic(err)
     c.JSON(err.Code, err)
@@ -117,4 +130,16 @@ func (e * Env) uploadImage (c *gin.Context) {
   fmt.Println(fileName)
   c.JSON(200, fileName)
 
+}
+
+func (e *Env) setTileActive (c *gin.Context) {
+  fmt.Println("Toggling the tile active")
+  var t models.Tile
+  c.BindJSON(&t)
+  fmt.Println(t)
+  err := e.db.SetActive(&t)
+  if err != nil {
+    c.JSON(400, err)
+  }
+  c.JSON(200, "Successfully updated active")
 }

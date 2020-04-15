@@ -7,11 +7,13 @@ import(
 
 type TileStore interface {
   AddTile (t *Tile) (*Tile, *errors.ApiError)
-  GetTiles () ([]Tile, *errors.ApiError)
+  GetActiveTiles () ([]Tile, *errors.ApiError)
+  GetAllTiles () ([]Tile, *errors.ApiError)
   UpdateTile (t *Tile) (*Tile, *errors.ApiError)
   AddSection (s *Section) (int, *errors.ApiError)
   GetSections (id int) ([]Section, *errors.ApiError)
   UpdateSection (s *Section) (int, int, *errors.ApiError)
+  SetActive (t *Tile) *errors.ApiError
 }
 
 type Tile struct {
@@ -21,6 +23,7 @@ type Tile struct {
     Sections      []Section `json:"sections"`
     Email         string    `json:"email"`
     Id            int       `json:"id"`
+    Active        int       `json:"active"`
 }
 
 func (db *DB) AddTile (t *Tile) (*Tile, *errors.ApiError) {
@@ -113,7 +116,7 @@ func (db *DB) UpdateTile (t *Tile) (*Tile, *errors.ApiError) {
   return t, nil
 }
 
-func (db *DB) GetTiles () ([]Tile, *errors.ApiError) {
+func (db *DB) GetAllTiles () ([]Tile, *errors.ApiError) {
   fmt.Println("Getting tiles")
   var tiles []Tile
   rows, err := db.Query("SELECT * FROM tiles")
@@ -126,7 +129,7 @@ func (db *DB) GetTiles () ([]Tile, *errors.ApiError) {
     for rows.Next() {
         fmt.Println("Rows")
         var tile Tile
-        if err := rows.Scan(&tile.Id, &tile.Title, &tile.Subtitle, &tile.Description, &tile.Email); err != nil {
+        if err := rows.Scan(&tile.Id, &tile.Title, &tile.Subtitle, &tile.Description, &tile.Email, &tile.Active); err != nil {
           panic(err)
             return nil, &errors.ApiError{err, "Error whilst accessing tiles from database", 400}
         }
@@ -142,4 +145,60 @@ func (db *DB) GetTiles () ([]Tile, *errors.ApiError) {
     }
     fmt.Println("Returned tiles")
     return tiles, nil
+}
+
+func (db *DB) GetActiveTiles () ([]Tile, *errors.ApiError) {
+  fmt.Println("Getting tiles")
+  var tiles []Tile
+  rows, err := db.Query("SELECT * FROM tiles WHERE active=1")
+    if err != nil {
+      panic(err)
+      return nil, &errors.ApiError{err, "Error whilst accessing tiles from database", 400}
+    }
+    defer rows.Close()
+    fmt.Println("Got tiles")
+    for rows.Next() {
+        fmt.Println("Rows")
+        var tile Tile
+        if err := rows.Scan(&tile.Id, &tile.Title, &tile.Subtitle, &tile.Description, &tile.Email, &tile.Active); err != nil {
+          panic(err)
+            return nil, &errors.ApiError{err, "Error whilst accessing tiles from database", 400}
+        }
+       
+        s, sectionErr := db.GetSections(tile.Id)
+        if sectionErr != nil {
+            panic(err)
+            return nil, &errors.ApiError{err, "Error accessing sections for tile", 400}
+        }
+        tile.Sections = s
+        tiles = append(tiles, tile)
+        fmt.Println(tile.Title)
+    }
+    fmt.Println("Returned tiles")
+    return tiles, nil
+}
+
+
+func (db *DB) SetActive (t *Tile) *errors.ApiError {
+    sqlStmt := `UPDATE tiles 
+                SET active = $1
+                WHERE id = $2;`
+  res, updateErr := db.Exec(sqlStmt, int(t.Active), int(t.Id))
+  if updateErr != nil {
+    panic(updateErr)
+    return &errors.ApiError{updateErr, "Error upadting active", 400}
+  }
+  count, updateErr := res.RowsAffected()
+  if updateErr != nil {
+    panic(updateErr)
+    return &errors.ApiError{updateErr, "Error updating active", 400}
+  }
+  if count > 1 {
+    return &errors.ApiError{updateErr, "uhoh more than 1 given id", 400}
+  }
+  if count < 1 {
+    return &errors.ApiError{updateErr, "Could not find tile with given ID", 400}
+  }
+  fmt.Println("Updated Tile activity")
+  return nil
 }
