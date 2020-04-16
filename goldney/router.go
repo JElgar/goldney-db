@@ -147,15 +147,26 @@ func (e *Env) setTileActive (c *gin.Context) {
 
 func (e *Env) deleteSections (c *gin.Context) {
   fmt.Println("Deleting given section")
-  var sections = struct {
-    ids []int  `json:"sections"`
-  }{
-    []int{},
-  }
-  c.BindJSON(&sections)
-  fmt.Println(sections)
-  for id := range sections.ids {
-    e.db.DeleteSection(id)
+  //var sections = struct {
+  //  ids []int  `json:"sections"`
+  //}{
+  //  []int{},
+  //}
+  //type DelSections struct {
+  //  Ids []int `json:"secs"`
+  //}
+  var t models.Tile
+  c.BindJSON(&t)
+  fmt.Println(t)
+  fmt.Println(t.DeleteSecs)
+  for _, id := range t.DeleteSecs {
+    fmt.Println()
+    err := e.db.DeleteSection(id)
+    if err != nil {
+      if err.Err != nil {
+        panic(err.Err)
+      }
+    }
   }
   //err := e.db.SetActive(&t)
   //if err != nil {

@@ -25,6 +25,7 @@ type Tile struct {
     Email         string    `json:"email"`
     Id            int       `json:"id"`
     Active        int       `json:"active"`
+    DeleteSecs    []int     `json:"delSecs"`
 }
 
 func (db *DB) AddTile (t *Tile) (*Tile, *errors.ApiError) {

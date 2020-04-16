@@ -95,21 +95,34 @@ func (db *DB) GetSections (id int) ([]Section, *errors.ApiError) {
 }
 
 func (db *DB) DeleteSection (id int) (*errors.ApiError) {
-  sqlStmt := `DELETE sections 
+  fmt.Println("Deleteing section")
+  fmt.Println(id)
+  sqlStmt := `DELETE FROM sections 
               WHERE id=$1;`
-  res, delErr := db.Exec(sqlStmt, id)
-  
-  count, delErr := res.RowsAffected()
+
+  res, delErr := db.Exec(sqlStmt, int(id))
   if delErr != nil {
-    panic(delErr)
-    return &errors.ApiError{delErr, "Error deleteing", 400}
+    return &errors.ApiError{delErr, "Error deleting", 400}
   }
+
+  fmt.Println("1")
+
+  count, delErr := res.RowsAffected()
+    fmt.Println("1.5")
+  if delErr != nil {
+    fmt.Println("1.6")
+    panic(delErr)
+    return &errors.ApiError{delErr, "Error deleting", 400}
+  }
+  fmt.Println("2")
   if count > 1 {
     return &errors.ApiError{delErr, "uhoh more than 1 with id", 400}
   }
   if count < 1 {
     return &errors.ApiError{delErr, "Could not find tile with given ID", 400}
   }
+  fmt.Println("3")
   fmt.Println("Updated Tile Data, now doing sections")
+  fmt.Println("4")
   return nil
 }
