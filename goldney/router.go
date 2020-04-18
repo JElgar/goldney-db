@@ -52,11 +52,11 @@ func ping(c *gin.Context){
 }
 
 func (e *Env) newTile (c *gin.Context){
-    // TODO on success return user and enventually JSON web token
     var t models.Tile
-    c.BindJSON(&t)
-
-    fmt.Println(t)
+    binderr := c.ShouldBindJSON(&t)
+    if binderr != nil {
+      fmt.Println("The Binding was not a perfect match")
+    }
 
     _, err := e.db.AddTile(&t)
     if err != nil {
@@ -88,7 +88,10 @@ func (e *Env) getAllTiles (c *gin.Context) {
 
 func (e *Env) updateTile (c *gin.Context) {
   var t models.Tile
-  c.BindJSON(&t)
+  binderr := c.ShouldBindJSON(&t)
+  if binderr != nil {
+    fmt.Println("The Binding was not a perfect match")
+  }
   fmt.Println(t)
 
   _, err := e.db.UpdateTile(&t)
@@ -133,7 +136,10 @@ func (e * Env) uploadImage (c *gin.Context) {
 func (e *Env) setTileActive (c *gin.Context) {
   fmt.Println("Toggling the tile active")
   var t models.Tile
-  c.BindJSON(&t)
+  binderr := c.ShouldBindJSON(&t)
+  if binderr != nil {
+    fmt.Println("The Binding was not a perfect match")
+  }
   fmt.Println(t)
   err := e.db.SetActive(&t)
   if err != nil {
@@ -153,7 +159,10 @@ func (e *Env) deleteSections (c *gin.Context) {
   //  Ids []int `json:"secs"`
   //}
   var t models.Tile
-  c.BindJSON(&t)
+  binderr := c.ShouldBindJSON(&t)
+  if binderr != nil {
+    fmt.Println("The Binding was not a perfect match")
+  }
   fmt.Println(t)
   fmt.Println(t.DeleteSecs)
   for _, id := range t.DeleteSecs {

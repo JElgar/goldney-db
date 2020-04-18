@@ -84,12 +84,10 @@ func (db *DB) UpdateTile (t *Tile) (*Tile, *errors.ApiError) {
   //res, updateErr := db.Exec(sqlStmt, t.Title, t.Subtitle, t.Description, t.Email, t.Id)
   res, updateErr := db.Exec(sqlStmt, t.Title, t.Subtitle, t.Description, t.Email, int(t.Id))
   if updateErr != nil {
-    panic(updateErr)
     return nil, &errors.ApiError{updateErr, "Error updating", 400}
   }
   count, updateErr := res.RowsAffected()
   if updateErr != nil {
-    panic(updateErr)
     return nil, &errors.ApiError{updateErr, "Error updating", 400}
   }
   if count > 1 {
@@ -104,14 +102,12 @@ func (db *DB) UpdateTile (t *Tile) (*Tile, *errors.ApiError) {
     s.Tile_id = t.Id
     _, c, err := db.UpdateSection(&s)
     if err != nil {
-      panic(err)
       return t, &errors.ApiError{err, "Error updating Section", 400}
     }
     // If the section with that id doesnt already exist add it
     if c == 0 {
       _, err := db.AddSection(&s)
       if err != nil {
-        panic(err)
         return t, &errors.ApiError{err, "Error inserting new Section", 400}
       }
     }
