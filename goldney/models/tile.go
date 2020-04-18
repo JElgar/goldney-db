@@ -41,6 +41,7 @@ func (db *DB) AddTile (t *Tile) (*Tile, *errors.ApiError) {
   case nil:
     fmt.Println("Tile has been added to db")
   default:
+    fmt.Println("There was an error")
     return t, &errors.ApiError{insertErr, "Unknown Error during Insertion of User", 400}
   }
   

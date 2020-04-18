@@ -59,12 +59,9 @@ func (e *Env) newTile (c *gin.Context){
     fmt.Println(t)
 
     _, err := e.db.AddTile(&t)
-    if err != nil && err.Code == 409 {
-        c.JSON(err.Code, err)
-        return
-    } else if err != nil {
-        c.JSON(err.Code, err)
-        return
+    if err != nil {
+      c.JSON(err.Code, err)
+      return
     }
     c.JSON(200, "Success")
 }
