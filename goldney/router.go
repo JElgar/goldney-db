@@ -16,7 +16,8 @@ func SetupRouter(env *Env) *gin.Engine {
 	//	AllowHeaders:     []string{"Origin"},
 	//}))
     r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://create.goldneyhall.com"},
+      //AllowOrigins:     []string{"https://create.goldneyhall.com, http://localhost:3001"},
+        AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"POST", "PUT", "PATCH"},
 		AllowHeaders:     []string{"Origin"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -32,7 +33,12 @@ func SetupRouter(env *Env) *gin.Engine {
     // An end point to test onnection works
     api.GET("/ping", ping)
     api.POST("/newTile", env.newTile)
+    api.POST("/updateTile", env.updateTile)
     api.GET("/getTiles", env.getTiles)
+    api.GET("/getAllTiles", env.getAllTiles)
+    api.POST("/deleteSections", env.deleteSections)
+    
+    api.POST("/toggleActivateTile", env.setTileActive)
     
     api.POST("/uploadImage", env.uploadImage)
 
@@ -64,12 +70,39 @@ func (e *Env) newTile (c *gin.Context){
 }
 
 func (e *Env) getTiles (c *gin.Context) {
-  tiles, err := e.db.GetTiles()
+  tiles, err := e.db.GetActiveTiles()
   if err != nil {
+    panic(err)
     c.JSON(err.Code, err)
     return
   }
   c.JSON(200, tiles)
+}
+
+func (e *Env) getAllTiles (c *gin.Context) {
+  tiles, err := e.db.GetAllTiles()
+  if err != nil {
+    panic(err)
+    c.JSON(err.Code, err)
+    return
+  }
+  c.JSON(200, tiles)
+}
+
+func (e *Env) updateTile (c *gin.Context) {
+  var t models.Tile
+  c.BindJSON(&t)
+  fmt.Println(t)
+
+  _, err := e.db.UpdateTile(&t)
+  if err != nil && err.Code == 409 {
+      c.JSON(err.Code, err)
+      return
+  } else if err != nil {
+      c.JSON(err.Code, err)
+      return
+  }
+  c.JSON(200, "Successfully updated")
 }
 
 func (e * Env) uploadImage (c *gin.Context) {
@@ -98,4 +131,46 @@ func (e * Env) uploadImage (c *gin.Context) {
   fmt.Println(fileName)
   c.JSON(200, fileName)
 
+}
+
+func (e *Env) setTileActive (c *gin.Context) {
+  fmt.Println("Toggling the tile active")
+  var t models.Tile
+  c.BindJSON(&t)
+  fmt.Println(t)
+  err := e.db.SetActive(&t)
+  if err != nil {
+    c.JSON(400, err)
+  }
+  c.JSON(200, "Successfully updated active")
+}
+
+func (e *Env) deleteSections (c *gin.Context) {
+  fmt.Println("Deleting given section")
+  //var sections = struct {
+  //  ids []int  `json:"sections"`
+  //}{
+  //  []int{},
+  //}
+  //type DelSections struct {
+  //  Ids []int `json:"secs"`
+  //}
+  var t models.Tile
+  c.BindJSON(&t)
+  fmt.Println(t)
+  fmt.Println(t.DeleteSecs)
+  for _, id := range t.DeleteSecs {
+    fmt.Println()
+    err := e.db.DeleteSection(id)
+    if err != nil {
+      if err.Err != nil {
+        panic(err.Err)
+      }
+    }
+  }
+  //err := e.db.SetActive(&t)
+  //if err != nil {
+  //  c.JSON(400, err)
+  //}
+  c.JSON(200, "Successfully updated active")
 }

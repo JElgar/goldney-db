@@ -35,7 +35,7 @@ func main() {
         fmt.Println("I relly shouldn't be paiced here")
         log.Panic(err)
     }
-
+   
     env := &Env{db: db, da: da}
 
     //Gin stuff
