@@ -1,0 +1,215 @@
+openapi: "3.0.0"
+info:
+  title: Goldney API
+  description: The Goldney Hall application is designed to create an interactive experince around the gardens of Goldney through points of interest called tiles. Tiles offer a range of experiences including, text and images, audio guides and VR/AR experiences. This is accompanied by tours, which group tiles into ordered lists, and a map which displays the location of the tiles around the gardnen. These docs demonstate the avilable endpoints for the Goldney Spring server. The server will be acessed from two main locations, the application it self, inorder to update the current tiles and tours, and the admin panels inorder to create and edit content.
+  version: 1.0.0
+
+host: dev.goldneyhall.com
+basePath: /v1
+
+servers:
+  - url: https://api.goldneyhall.com/v1
+
+schemes:
+  - https
+
+tags:
+  - name: Tiles
+    description: Tiles represent a point of interest in the garden. They consist of fields, most improtantly the title, images, and description but also contain sections in which aditional information can be displayed (such as the history section). Tiles can also have additional features, including audio guides and AR/VR experience. 
+
+paths:
+  /getTiles:
+    get:
+      tags: 
+        - Tiles
+      summary: Get active tiles
+      description: Returns all tiles which should currently be active on the app. Activity can be changed via the admin panel at https://create.goldneyhall.com
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Returns Tile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tiles"
+        '400':
+          description: Error whilst accessing Tiles
+  /getAllTiles:
+    get:
+      tags: 
+        - Tiles
+      summary: Get all tiles
+      description: Get all the tiles and their corresponding section. In this case activity does not matter as every tile is returned.
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: returs all tiles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tiles"
+        '400':
+          description: Error whilst accessing Tiles
+
+  /newTile:
+    post:
+      tags: 
+        - Tiles
+      summary: New Tile
+      description: Creates a new Tile. This endpoint will primarily be called from the admin/student pannel (https://create.goldneyhall.com) where users can create a new tile using a web interface. 
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Tile"
+      responses:
+        '200':
+          description: successfully added new tile
+        '400':
+          description: error whilst adding tile
+
+  /updateTile:
+    post:
+      tags: 
+        - Tiles
+      summary: Update Tile
+      description: Updates the Tile with the given ID. 
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Tile"
+      responses:
+        '200':
+          description: successfully added new tile
+        '404':
+          description: could not find tile with given id
+        '400':
+          description: error whilst updating tile
+  
+  /deleteSections:
+    post:
+      tags: 
+        - Tiles
+      summary: Delete Sections
+      description: Takes an array of section ids and deletes the associated sections from the database.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                sections:
+                  description: Array of Ids, of sections to be deleted
+                  type: array
+                  items: 
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: successfully deleted sections 
+        '404':
+          description: could not find sections with all given id
+        '400':
+          description: error whilst deleting sections
+
+  /toggleActiveTile:
+    post:
+      tags: 
+        - Tiles
+      summary: Sets tile activity
+      description: This sets the activity of the tile. When active it will be returned during the getTiles. This allows an admin to choose which tiles are aviable on the app and which remain hidden/ need editing before approval. 
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  description: Id of tile
+                  type: integer
+                activity:
+                  description: If 1 sets to active, if 0 sets to unactive
+                  type: integer
+
+      responses:
+        '200':
+          description: successfully set activity
+        '404':
+          description: could not find tile with given id
+        '400':
+          description: error whilst setting activity 
+
+  /uploadImage:
+    post:
+      tags: 
+        - Tiles
+      summary: Upload Image
+      description: Takes an image and stores in aws S3. The image is made public so it can be accessed through a URL from the application without any additional authentiacation. The image name and link are returned and subsiquently stored in the section object in the postgres datastore via the newTile or updateTile endpoints.
+      requestBody:
+        content:
+          'image/png':
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: successfully uploaded image
+          content:
+            application/json:
+              schema:
+                properties:
+                  image_name:
+                    description: Name of the Image file
+                    type: string
+                  image_link:
+                    description: Link to public image stored on aws S3
+                    type: string
+        '400':
+          description: error whilst uploading image
+
+components:
+  schemas:
+
+    Tile:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        description:
+          type: string
+        email:
+          type: string
+        active:
+          type: integer
+        sections:
+          type: array
+          items:
+            $ref: "#/components/schemas/Section"
+    
+    Section:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        tile_id:
+          type: id
+        image_name:
+          type: string
+        image_link:
+          type: string
+
+    Tiles:
+      type: array
+      items:
+        $ref: "#/components/schemas/Tile"

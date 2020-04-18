@@ -1,2 +1,4 @@
 goldney/.env
 goldney/secret/*
+docs/node_modules/*
+docs/package-lock.json
