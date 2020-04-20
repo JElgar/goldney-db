@@ -29,6 +29,9 @@ func (db *DB) AddSection (s *Section) (int, *errors.ApiError) {
     } else if (s.Type == "image") {
       sqlStmt := `INSERT INTO sections (tile_id, type, image_name, image_link) VALUES ($1,$2, $3, $4) RETURNING id;`
       res, insertErr = db.Exec(sqlStmt, s.Tile_id, s.Type, s.ImageName, s.ImageLink)
+    } else if (s.Type == "360") {
+      sqlStmt := `INSERT INTO sections (tile_id, type, image_name, image_link) VALUES ($1,$2, $3, $4) RETURNING id;`
+      res, insertErr = db.Exec(sqlStmt, s.Tile_id, s.Type, s.ImageName, s.ImageLink)
     }
     switch insertErr{
     case nil:
@@ -51,6 +54,11 @@ func (db *DB) UpdateSection (s *Section) (int, int, *errors.ApiError) {
                   WHERE id=$3;`
       res, insertErr = db.Exec(sqlStmt, s.Title, s.Description, s.Tile_id)
     } else if (s.Type == "image") {
+      sqlStmt := `UPDATE sections 
+                  SET image_name = $1, image_link = $2 
+                  WHERE id=$3;`
+      res, insertErr = db.Exec(sqlStmt, s.ImageName, s.ImageLink, s.Id)
+    } else if (s.Type == "360") {
       sqlStmt := `UPDATE sections 
                   SET image_name = $1, image_link = $2 
                   WHERE id=$3;`

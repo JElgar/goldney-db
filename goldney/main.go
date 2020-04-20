@@ -7,7 +7,6 @@ import (
   "github.com/joho/godotenv"
   "log"
   "os"
-  "fmt"
 )
 
 // Stuct to store environment variables for application
@@ -27,19 +26,17 @@ func main() {
     // Set up connection to postgres
     db, err := models.InitDB(os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD") )
     if err != nil {
-        log.Panic(err)
+      log.Fatal("Failed to connect to postgres")
     }
 
     da, err := models.InitAssetsDatastore(secret.AWS_KEY_ID, secret.AWS_KEY, secret.AWS_TOKEN)
     if err != nil {
-        fmt.Println("I relly shouldn't be paiced here")
-        log.Panic(err)
+      log.Fatal("Failed to connect to S3")
     }
    
     env := &Env{db: db, da: da}
 
     //Gin stuff
-    fmt.Println("Im gonna go setup the routers")
     r := SetupRouter(env)
     r.Run(":8080")
 }
