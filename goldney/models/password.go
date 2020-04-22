@@ -13,6 +13,7 @@ func HashSaltPwd(pwd []byte) (string, *errors.ApiError) {
         return "", &errors.ApiError{err, "Error hashing and salting password", 500}
     }
 
+    fmt.Println(string(hash))
     return string(hash), nil
 }
 

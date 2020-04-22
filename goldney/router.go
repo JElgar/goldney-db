@@ -225,7 +225,11 @@ func (e *Env) login (c *gin.Context) {
 
     err := e.db.Login(&u)
     if err != nil {
-      panic(err)
+      if err.Code == 401 {
+        c.JSON(404, "Incorrect Credentials")
+        return
+      }
+      c.JSON(500, "Error logging in")
       return
     }
     expirationTime := time.Now().Add(5 * time.Minute)
