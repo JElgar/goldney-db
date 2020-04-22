@@ -8,6 +8,7 @@ import (
 // This is the datastore interface which states what fucntions a datastore must define. This is very useful for testing as a "fake" datastore can be created.
 type Datastore interface {
   TileStore
+  Authenticate
 }
 
 

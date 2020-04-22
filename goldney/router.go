@@ -3,8 +3,11 @@ package main
 import (
    "github.com/gin-gonic/gin"
    models "jameselgar.com/goldney/models"
+   errors "jameselgar.com/goldney/errors"
   "github.com/gin-contrib/cors"
   "fmt"
+  "time"
+  "net/http"
 )
 
 func SetupRouter(env *Env) *gin.Engine {
@@ -29,19 +32,24 @@ func SetupRouter(env *Env) *gin.Engine {
     //r.Use(cors.Default())
     // guessing this is pretty handy for version control :D
     api := r.Group("v1")
+    tokenAuth := api.Group("/")
+    tokenAuth.Use(AuthRequired())
     
     // An end point to test onnection works
     api.GET("/ping", ping)
     api.POST("/newTile", env.newTile)
-    api.POST("/updateTile", env.updateTile)
     api.GET("/getTiles", env.getTiles)
-    api.GET("/getAllTiles", env.getAllTiles)
-    api.POST("/deleteSections", env.deleteSections)
-    
-    api.POST("/toggleActivateTile", env.setTileActive)
     
     api.POST("/uploadImage", env.uploadImage)
     api.POST("/uploadAudio", env.uploadAudio)
+
+    api.POST("/login", env.login)
+   
+    // Admin only function
+    api.POST("/updateTile", env.updateTile)
+    api.POST("/deleteSections", env.deleteSections)
+    api.POST("/toggleActivateTile", env.setTileActive)
+    api.GET("/getAllTiles", env.getAllTiles)
 
     return r
 }
@@ -209,3 +217,76 @@ func (e *Env) deleteSections (c *gin.Context) {
   //}
   c.JSON(200, "Successfully updated active")
 }
+
+func (e *Env) login (c *gin.Context) {
+    var u models.User
+    c.BindJSON(&u)
+
+    err := e.db.Login(&u)
+    if err != nil {
+      panic(err)
+      return
+    }
+    expirationTime := time.Now().Add(5 * time.Minute)
+
+    claims := &models.Claims {
+      Username: u.Username,
+      StandardClaims: models.NewStandardClaims(expirationTime),
+    }
+    token := models.NewJWT(models.DefaultSignMethod(), claims)
+
+    tokenString, erro := token.SignedString(models.GetKey())
+    if erro != nil {
+        fmt.Println("Error making token into signed string")
+    }
+    // TODO making these both false seemed to fix an issue but i dont want them to both be false im guessing 
+    fmt.Println("Setting cookie")
+    c.SetCookie(
+        "TOKEN",
+        tokenString,
+        3600,
+        "/",
+        "",
+        false,
+        false)
+}
+
+func AuthRequired() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        fmt.Println("Hello")
+        cookie, err := c.Cookie("token")
+        fmt.Println(cookie)
+
+        //cookie, err := c.Request.Cookie("token")
+        if err != nil {
+            if err == http.ErrNoCookie {
+                // If the cookie is not set, return an unauthorized status
+                fmt.Println("Cookie not set")
+                c.JSON(400, errors.ApiError{err, "No cookie supplied", 400})
+	            return
+            }
+            c.JSON(500, errors.ApiError{err, "Error getting cookie", 400})
+	    	return
+	    }
+        //tokenString, err := url.QueryUnescape(cookie.Value)
+        claims := &models.Claims{}
+
+        token, erro := models.ParseWClaims(cookie, claims)
+
+        if !token.Valid {
+            fmt.Println("Invalid Token")
+            return
+        }
+
+        if erro != nil {
+            if erro == models.ErrSignatureInvalid{
+                fmt.Println("Invalid Signature")
+                return
+            }
+            fmt.Println("Unknown error")
+            return
+        }
+        c.Next()
+    }
+}
+
