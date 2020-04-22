@@ -241,14 +241,15 @@ func (e *Env) login (c *gin.Context) {
     }
     // TODO making these both false seemed to fix an issue but i dont want them to both be false im guessing 
     fmt.Println("Setting cookie")
-    c.SetCookie(
-        "TOKEN",
-        tokenString,
-        3600,
-        "/",
-        "",
-        false,
-        false)
+    //c.SetCookie(
+    //    "TOKEN",
+    //    tokenString,
+    //    3600,
+    //    "/",
+    //    "",
+    //    false,
+    //    false)
+    c.JSON(200, tokenString)
 }
 
 func AuthRequired() gin.HandlerFunc {
