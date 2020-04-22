@@ -132,7 +132,7 @@ func (db *DB) GetAllTiles () ([]Tile, *errors.ApiError) {
     for rows.Next() {
         fmt.Println("Rows")
         var tile Tile
-        if err := rows.Scan(&tile.Id, &tile.Title, &tile.Subtitle, &tile.Description, &tile.Email, &tile.Active); err != nil {
+        if err := rows.Scan(&tile.Id, &tile.Title, &tile.Subtitle, &tile.Description, &tile.Email, &tile.Active, &tile.AudioName, &tile.AudioLink); err != nil {
           panic(err)
             return nil, &errors.ApiError{err, "Error whilst accessing tiles from database", 400}
         }
@@ -163,7 +163,7 @@ func (db *DB) GetActiveTiles () ([]Tile, *errors.ApiError) {
     for rows.Next() {
         fmt.Println("Rows")
         var tile Tile
-        if err := rows.Scan(&tile.Id, &tile.Title, &tile.Subtitle, &tile.Description, &tile.Email, &tile.Active); err != nil {
+        if err := rows.Scan(&tile.Id, &tile.Title, &tile.Subtitle, &tile.Description, &tile.Email, &tile.Active, &tile.AudioName, &tile.AudioLink); err != nil {
           panic(err)
             return nil, &errors.ApiError{err, "Error whilst accessing tiles from database", 400}
         }
