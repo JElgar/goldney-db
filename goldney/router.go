@@ -19,10 +19,11 @@ func SetupRouter(env *Env) *gin.Engine {
 	//	AllowHeaders:     []string{"Origin"},
 	//}))
     r.Use(cors.New(cors.Config{
-      //AllowOrigins:     []string{"https://create.goldneyhall.com, http://localhost:3001"},
-        AllowOrigins:     []string{"*"},
+      AllowOrigins:     []string{"https://create.goldneyhall.com", "https://goldneyhall.com", "http://goldneyhall.com", "http://create.goldneyhall.com"},
+        //AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"POST", "PUT", "PATCH"},
 		AllowHeaders:     []string{"Origin"},
+        AllowCredentials: true,
 		ExposeHeaders:    []string{"Content-Length"},
 	}))
 
@@ -241,15 +242,17 @@ func (e *Env) login (c *gin.Context) {
     }
     // TODO making these both false seemed to fix an issue but i dont want them to both be false im guessing 
     fmt.Println("Setting cookie")
-    //c.SetCookie(
-    //    "TOKEN",
-    //    tokenString,
-    //    3600,
-    //    "/",
-    //    "",
-    //    false,
-    //    false)
-    c.JSON(200, tokenString)
+    c.SetCookie(
+        "token",
+        tokenString,
+        3600,
+        "/",
+        "",
+        false,
+        false)
+    //c.JSON(200, gin.H{
+    //    "token": tokenString,
+    //})
 }
 
 func AuthRequired() gin.HandlerFunc {
@@ -287,6 +290,7 @@ func AuthRequired() gin.HandlerFunc {
             fmt.Println("Unknown error")
             return
         }
+        fmt.Println("Cookie all good")
         c.Next()
     }
 }
