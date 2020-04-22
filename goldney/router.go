@@ -41,6 +41,7 @@ func SetupRouter(env *Env) *gin.Engine {
     api.POST("/toggleActivateTile", env.setTileActive)
     
     api.POST("/uploadImage", env.uploadImage)
+    api.POST("/uploadAudio", env.uploadAudio)
 
     return r
 }
@@ -103,6 +104,34 @@ func (e *Env) updateTile (c *gin.Context) {
       return
   }
   c.JSON(200, "Successfully updated")
+}
+
+func (e * Env) uploadImage (c *gin.Context) {
+  fmt.Println("uplaoding image endpoint reached")
+  fileHeader, err := c.FormFile("undefined")
+  if err != nil {
+    panic(err)
+    c.JSON(401, err)
+    return
+  }
+  f, err := fileHeader.Open()
+  if err != nil {
+    c.JSON(402, err)
+    return
+  }
+  fmt.Println("doing the uploaidng")
+  fileName, err := e.da.ImageStore(f, fileHeader)
+  fmt.Println("did the uploaidng")
+  if err != nil {
+    fmt.Println("panicing error")
+    panic(err)
+    c.JSON(403, err)
+    return
+  }
+  fmt.Println("uplaoded the image")
+  fmt.Println(fileName)
+  c.JSON(200, fileName)
+
 }
 
 func (e * Env) uploadImage (c *gin.Context) {
