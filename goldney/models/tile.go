@@ -74,9 +74,9 @@ func (db *DB) UpdateTile (t *Tile) (*Tile, *errors.ApiError) {
                 SET title = $1,
                     subtitle = $2,
                     description = $3,
-                    email = $4 
-                    audio_name = $5 
-                    audio_link = $6 
+                    email = $4,
+                    audio_name = $5,
+                    audio_link = $6
                 WHERE id = $7;`
  
   fmt.Println("Tile id is: ")
