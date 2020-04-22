@@ -267,9 +267,11 @@ func AuthRequired() gin.HandlerFunc {
                 // If the cookie is not set, return an unauthorized status
                 fmt.Println("Cookie not set")
                 c.JSON(400, errors.ApiError{err, "No cookie supplied", 400})
+                c.Abort()
 	            return
             }
             c.JSON(500, errors.ApiError{err, "Error getting cookie", 400})
+            c.Abort()
 	    	return
 	    }
         //tokenString, err := url.QueryUnescape(cookie.Value)
@@ -279,15 +281,21 @@ func AuthRequired() gin.HandlerFunc {
 
         if !token.Valid {
             fmt.Println("Invalid Token")
+            c.JSON(400, errors.ApiError{err, "Invalid Token", 400})
+            c.Abort()
             return
         }
 
         if erro != nil {
             if erro == models.ErrSignatureInvalid{
                 fmt.Println("Invalid Signature")
+                c.JSON(400, errors.ApiError{err, "Invalid Signature", 400})
+                c.Abort()
                 return
             }
             fmt.Println("Unknown error")
+            c.JSON(500, errors.ApiError{err, "Unknown error", 400})
+            c.Abort()
             return
         }
         fmt.Println("Cookie all good")
