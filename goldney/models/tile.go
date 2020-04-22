@@ -26,17 +26,19 @@ type Tile struct {
     Id            int       `json:"id"`
     Active        int       `json:"active"`
     DeleteSecs    []int     `json:"delSecs"`
+    AudioName     string    `json:"audio_name"`
+    AudioLink     string    `json:"audio_link"`
 }
 
 func (db *DB) AddTile (t *Tile) (*Tile, *errors.ApiError) {
   fmt.Println("Adding tile")
   // Temporarily got rid of sections
   sqlStmt := `
-      INSERT INTO tiles (title, subtitle, description, email) 
-      VALUES($1,$2, $3, $4) 
+      INSERT INTO tiles (title, subtitle, description, email, audio_name, audio_link) 
+      VALUES($1,$2, $3, $4, $5, $6) 
       RETURNING id;`
   var id int
-  insertErr := db.QueryRow(sqlStmt, t.Title, t.Subtitle, t.Description, t.Email).Scan(&id)
+  insertErr := db.QueryRow(sqlStmt, t.Title, t.Subtitle, t.Description, t.Email, t.AudioName, t.AudioLink).Scan(&id)
   switch insertErr{
   case nil:
     fmt.Println("Tile has been added to db")
@@ -73,7 +75,9 @@ func (db *DB) UpdateTile (t *Tile) (*Tile, *errors.ApiError) {
                     subtitle = $2,
                     description = $3,
                     email = $4 
-                WHERE id = $5;`
+                    audio_name = $5 
+                    audio_link = $6 
+                WHERE id = $7;`
  
   fmt.Println("Tile id is: ")
   fmt.Println(t.Id)
@@ -82,7 +86,7 @@ func (db *DB) UpdateTile (t *Tile) (*Tile, *errors.ApiError) {
   fmt.Println(t.Description)
   fmt.Println(t.Email)
   //res, updateErr := db.Exec(sqlStmt, t.Title, t.Subtitle, t.Description, t.Email, t.Id)
-  res, updateErr := db.Exec(sqlStmt, t.Title, t.Subtitle, t.Description, t.Email, int(t.Id))
+  res, updateErr := db.Exec(sqlStmt, t.Title, t.Subtitle, t.Description, t.Email, t.AudioName, t.AudioLink, int(t.Id))
   if updateErr != nil {
     return nil, &errors.ApiError{updateErr, "Error updating", 400}
   }

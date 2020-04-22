@@ -134,7 +134,7 @@ func (e * Env) uploadImage (c *gin.Context) {
 
 }
 
-func (e * Env) uploadImage (c *gin.Context) {
+func (e * Env) uploadAudio (c *gin.Context) {
   fmt.Println("uplaoding image endpoint reached")
   fileHeader, err := c.FormFile("undefined")
   if err != nil {
@@ -148,7 +148,7 @@ func (e * Env) uploadImage (c *gin.Context) {
     return
   }
   fmt.Println("doing the uploaidng")
-  fileName, err := e.da.ImageStore(f, fileHeader)
+  fileName, err := e.da.AudioStore(f, fileHeader)
   fmt.Println("did the uploaidng")
   if err != nil {
     fmt.Println("panicing error")

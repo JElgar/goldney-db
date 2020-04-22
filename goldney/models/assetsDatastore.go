@@ -15,6 +15,7 @@ import (
 
 type AssetsDatastore interface {
   ImageStore(file multipart.File, fileHeader *multipart.FileHeader) (string, error)
+  AudioStore(file multipart.File, fileHeader *multipart.FileHeader) (string, error)
   UpdateSession()
 }
 
@@ -101,6 +102,39 @@ func (da *DA) ImageStore(file multipart.File, fileHeader *multipart.FileHeader) 
 
   // create a unique file name for the file
   tempFileName := "pictures/" + fileHeader.Filename  + now + filepath.Ext(fileHeader.Filename)
+	
+  // config settings: this is where you choose the bucket,
+  // filename, content-type and storage class of the file
+  // you're uploading
+  _, err := da.S3.PutObject(&s3.PutObjectInput{
+     Bucket:               aws.String("goldney-james"),
+     Key:                  aws.String(tempFileName),
+     ACL:                  aws.String("public-read"),// could be private if you want it to be access by only authorized users
+     Body:                 bytes.NewReader(buffer),
+     ContentLength:        aws.Int64(int64(size)),
+     ContentType:          aws.String(http.DetectContentType(buffer)),
+     //ContentDisposition:   aws.String("attachment"),
+     //ServerSideEncryption: aws.String("AES256"),
+     //StorageClass:         aws.String("INTELLIGENT_TIERING"),
+  })
+  if err != nil {
+     return "", err
+  }
+  
+  fmt.Println("You just uploaded: " + tempFileName)
+  return tempFileName, err
+}
+
+func (da *DA) AudioStore(file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
+    // get the file size and read
+  // the file content into a buffer
+  size := fileHeader.Size
+  buffer := make([]byte, size)
+  file.Read(buffer)
+  now := time.Now().String()
+
+  // create a unique file name for the file
+  tempFileName := "audio/" + fileHeader.Filename  + now + filepath.Ext(fileHeader.Filename)
 	
   // config settings: this is where you choose the bucket,
   // filename, content-type and storage class of the file
