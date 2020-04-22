@@ -46,10 +46,10 @@ func SetupRouter(env *Env) *gin.Engine {
     api.POST("/login", env.login)
    
     // Admin only function
-    api.POST("/updateTile", env.updateTile)
-    api.POST("/deleteSections", env.deleteSections)
-    api.POST("/toggleActivateTile", env.setTileActive)
-    api.GET("/getAllTiles", env.getAllTiles)
+    tokenAuth.POST("/updateTile", env.updateTile)
+    tokenAuth.POST("/deleteSections", env.deleteSections)
+    tokenAuth.POST("/toggleActivateTile", env.setTileActive)
+    tokenAuth.GET("/getAllTiles", env.getAllTiles)
 
     return r
 }
